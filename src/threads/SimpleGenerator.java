@@ -13,7 +13,7 @@ public class SimpleGenerator implements Runnable {
 
     @Override
     public void run() {
-        for (int i = 0; i < task.getNumTasks(); i++) {
+        for (int i = 0; i < task.getTasks(); i++) {
             if (Thread.currentThread().isInterrupted()) {
                 System.out.println("[Simple] Generator interrupted");
                 return;

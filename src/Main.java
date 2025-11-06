@@ -36,7 +36,7 @@ public class Main {
 
     public static void nonThread() throws InappropriateFunctionPointException {
         Task t = new Task(100);
-        for (int i = 0; i < t.getNumTasks(); i++) {
+        for (int i = 0; i < t.getTasks(); i++) {
             t.setFunction(new Log(1 + (Math.random() * 9)));
             t.setLeftX(Math.random() * 100);
             t.setRightX(Math.random() * 100 + 100);

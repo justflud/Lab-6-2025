@@ -12,25 +12,36 @@ public class Integrator extends Thread {
 
     @Override
     public void run() {
-        for (int i = 0; i < task.getNumTasks(); i++) {
-            // ждём, пока генератор подаст данные
-            while (!task.isReady()) {
-                Thread.yield(); // отдаём квант времени
-            }
-
-            double result = 0;
+        for (int i = 0; i < task.getTasks(); ++i) {
             try {
-                result = Functions.integrate(task.getFunction(),
-                        task.getLeftX(), task.getRightX(), task.getStep());
-            } catch (InappropriateFunctionPointException e) {
-                throw new RuntimeException(e);
+                // ждём данных от генератора
+                task.getIntegratorSem().acquire();
+
+                double leftX, rightX, step;
+                synchronized (task) {
+                    leftX = task.getLeftX();
+                    rightX = task.getRightX();
+                    step = task.getStep();
+                }
+
+                double result;
+                try {
+                    result = Functions.integrate(task.getFunction(), leftX, rightX, step);
+                } catch (InappropriateFunctionPointException e) {
+                    throw new RuntimeException(e);
+                }
+
+                System.out.println("[Complicated] Result leftX = " + leftX +
+                        " rightX = " + rightX + " step = " + step +
+                        " Result: " + result);
+
+                // возвращаем ход генератору
+                task.getGeneratorSem().release();
+
+            } catch (InterruptedException e) {
+                System.out.println("[Integrator] Interrupted.");
+                return;
             }
-
-            System.out.println("[Complicated] Result leftX = " + task.getLeftX() +
-                    " rightX = " + task.getRightX() + " step = " + task.getStep() +
-                    " Result: " + result);
-
-            task.setReady(false); // освобождаем место для следующего задания
         }
     }
 }
