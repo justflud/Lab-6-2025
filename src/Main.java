@@ -27,6 +27,8 @@ public class Main {
         System.out.println("Задание 3");
         simpleThreads();
 
+        Thread.sleep(1000);
+
         // Пример использования метода complicatedThreads
         System.out.println("Задание 4");
         complicatedThreads();
@@ -57,16 +59,14 @@ public class Main {
 
     public static void complicatedThreads() throws InterruptedException {
         Task task = new Task(100);
-        Semaphore semaphore = new Semaphore(1); // Используем семафор с одним разрешением
 
-        Thread generatorThread = new Generator(task, semaphore);
+        Thread generatorThread = new Generator(task);
+        Thread integratorThread = new Integrator(task);
+
         generatorThread.start();
-
-        Thread integratorThread = new Integrator(task, semaphore);
         integratorThread.start();
 
-        Thread.sleep(1000); // Ждем 1000 миллисекунд
-
+        Thread.sleep(1000);
         generatorThread.interrupt();
         integratorThread.interrupt();
     }

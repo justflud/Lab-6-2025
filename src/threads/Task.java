@@ -7,6 +7,8 @@ public class Task {
     private Function function;
     private double leftX, rightX, step;
     private int numTasks;
+    private boolean ready = false;
+
 
     public Task(int numTasks) {
         if (numTasks <= 0) {
@@ -63,4 +65,6 @@ public class Task {
         }
         this.numTasks = numTasks;
     }
+    public boolean isReady() { return ready; }
+    public void setReady(boolean ready) { this.ready = ready; }
 }

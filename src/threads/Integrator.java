@@ -1,48 +1,36 @@
 package threads;
 
-import functions.Function;
 import functions.Functions;
 import functions.InappropriateFunctionPointException;
 
-import java.util.concurrent.Semaphore;
-
 public class Integrator extends Thread {
-    private Task task;
-    private Semaphore semaphore;
+    private final Task task;
 
-    public Integrator(Task task, Semaphore semaphore) {
+    public Integrator(Task task) {
         this.task = task;
-        this.semaphore = semaphore;
     }
 
     @Override
     public void run() {
-        for (int i = 0; i < task.getNumTasks(); ++i) {
-            double leftX, rightX, step;
-            Function function;
-
-            try {
-                semaphore.acquire();
-                synchronized (task) {
-                    leftX = task.getLeftX();
-                    rightX = task.getRightX();
-                    step = task.getStep();
-                    function = task.getFunction();
-                }
-
-                double result = 0;
-                try {
-                    result = Functions.integrate(function, leftX, rightX, step);
-                } catch (InappropriateFunctionPointException e) {
-                    throw new RuntimeException(e);
-                }
-
-                System.out.println("Result leftX = " + leftX + " rightX = " + rightX + " step = " + step + " Result: " + result);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
-                semaphore.release();
+        for (int i = 0; i < task.getNumTasks(); i++) {
+            // ждём, пока генератор подаст данные
+            while (!task.isReady()) {
+                Thread.yield(); // отдаём квант времени
             }
+
+            double result = 0;
+            try {
+                result = Functions.integrate(task.getFunction(),
+                        task.getLeftX(), task.getRightX(), task.getStep());
+            } catch (InappropriateFunctionPointException e) {
+                throw new RuntimeException(e);
+            }
+
+            System.out.println("[Complicated] Result leftX = " + task.getLeftX() +
+                    " rightX = " + task.getRightX() + " step = " + task.getStep() +
+                    " Result: " + result);
+
+            task.setReady(false); // освобождаем место для следующего задания
         }
     }
 }
